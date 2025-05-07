@@ -1,31 +1,35 @@
 import type React from "react";
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { UserRole } from "../types/auth";
 import { doctorService } from "../services/doctorService";
 
-const AdminDashboard: React.FC = () => {
+const ManageUsers: React.FC = () => {
   const { currentUser } = useAuth();
   const [users, setUsers] = useState<any[]>([]);
+  const [pendingDoctors, setPendingDoctors] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const usersPerPage = 5;
 
   useEffect(() => {
-    const fetchDoctors = async () => {
+    const fetchData = async () => {
       setIsLoading(true);
       try {
-        const doctors = await doctorService.fetchUsers();
-        setUsers(doctors);
+        const [allUsers, pending] = await Promise.all([
+          doctorService.fetchUsers(),
+          doctorService.fetchPendingDoctors(),
+        ]);
+        setUsers(allUsers);
+        setPendingDoctors(pending);
       } catch (error) {
-        // Error is already logged in the service
+        console.error("Error fetching data:", error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchDoctors();
+    fetchData();
   }, []);
 
   const filteredUsers = users.filter((user) => {
@@ -46,10 +50,21 @@ const AdminDashboard: React.FC = () => {
     );
   };
 
-  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+  const handleDoctorApproval = async (doctorId: string, action: "approve" | "reject") => {
+    try {
+    //   const adminId = currentUser?.id;
+    const adminId = currentUser?.id;
+      if (!adminId) throw new Error("Admin ID not found");
+      await doctorService.updateDoctorStatus(doctorId, action, adminId);
+      setPendingDoctors((prev) => prev.filter((doctor) => doctor.id !== doctorId));
+      const updatedUsers = await doctorService.fetchUsers();
+      setUsers(updatedUsers);
+    } catch (error) {
+      console.error(`Error ${action}ing doctor:`, error);
+    }
+  };
 
-  const doctorCount = users.filter((user) => user.role.toLowerCase() === "doctor").length;
-  const patientCount = users.filter((user) => user.role.toLowerCase() === "patient").length;
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
   if (isLoading) {
     return (
@@ -63,26 +78,49 @@ const AdminDashboard: React.FC = () => {
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-          <div className="text-lg text-gray-700">Welcome, {currentUser?.name || currentUser?.email}</div>
+          <h1 className="text-3xl font-bold text-gray-900">Manage Users</h1>
         </div>
 
-        <div className="mb-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="bg-white p-6 rounded-lg shadow-lg">
-              <h3 className="text-xl font-semibold text-blue-700">Total Users</h3>
-              <p className="text-4xl font-bold text-gray-900">{users.length}</p>
-            </div>
-            <div className="bg-white p-6 rounded-lg shadow-lg">
-              <h3 className="text-xl font-semibold text-blue-700">Total Doctors</h3>
-              <p className="text-4xl font-bold text-gray-900">{doctorCount}</p>
-            </div>
-            <div className="bg-white p-6 rounded-lg shadow-lg">
-              <h3 className="text-xl font-semibold text-blue-700">Total Patients</h3>
-              <p className="text-4xl font-bold text-gray-900">{patientCount}</p>
+        {pendingDoctors.length > 0 && (
+          <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4">Pending Doctor Requests</h2>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-600">Name</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-600">Email</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-600">Specialization</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-600">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {pendingDoctors.map((doctor) => (
+                    <tr key={doctor.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 text-sm text-gray-900">{doctor.name}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900">{doctor.email}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900">{doctor.specialization}</td>
+                      <td className="px-6 py-4 text-sm">
+                        <button
+                          onClick={() => handleDoctorApproval(doctor.id, "approve")}
+                          className="text-green-600 hover:text-green-800 mr-4"
+                        >
+                          Approve
+                        </button>
+                        <button
+                          onClick={() => handleDoctorApproval(doctor.id, "reject")}
+                          className="text-red-600 hover:text-red-800"
+                        >
+                          Reject
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
-        </div>
+        )}
 
         <div className="bg-white rounded-lg shadow-lg p-6">
           <h2 className="text-2xl font-semibold text-gray-900 mb-4">User Management</h2>
@@ -191,78 +229,4 @@ const AdminDashboard: React.FC = () => {
   );
 };
 
-export default AdminDashboard;
-
-
-// import type React from "react";
-// import { useState, useEffect } from "react";
-// import { useAuth } from "../context/AuthContext";
-// import { doctorService } from "../services/doctorService";
-
-// const AdminDashboard: React.FC = () => {
-//   const { currentUser } = useAuth();
-//   const [totalUsers, setTotalUsers] = useState<number>(0);
-//   const [activeDoctors, setActiveDoctors] = useState<number>(0);
-//   const [activePatients, setActivePatients] = useState<number>(0);
-//   const [isLoading, setIsLoading] = useState(true);
-
-//   useEffect(() => {
-//     const fetchData = async () => {
-//       setIsLoading(true);
-//       try {
-//         const [users, doctors, patients] = await Promise.all([
-//           doctorService.fetchUsers(),
-//           doctorService.fetchActiveUsersByRole("DOCTOR"),
-//           doctorService.fetchActiveUsersByRole("PATIENT"),
-//         ]);
-//         setTotalUsers(users.length);
-//         setActiveDoctors(doctors.length);
-//         setActivePatients(patients.length);
-//       } catch (error) {
-//         console.error("Error fetching dashboard data:", error);
-//       } finally {
-//         setIsLoading(false);
-//       }
-//     };
-
-//     fetchData();
-//   }, []);
-
-//   if (isLoading) {
-//     return (
-//       <div className="flex justify-center items-center h-screen">
-//         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-//       </div>
-//     );
-//   }
-
-//   return (
-//     <div className="min-h-screen bg-gray-100 p-6">
-//       <div className="max-w-7xl mx-auto">
-//         <div className="flex justify-between items-center mb-6">
-//           <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-//           <div className="text-lg text-gray-700">Welcome, {currentUser?.name || currentUser?.email}</div>
-//         </div>
-
-//         <div className="mb-8">
-//           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-//             <div className="bg-white p-6 rounded-lg shadow-lg">
-//               <h3 className="text-xl font-semibold text-blue-700">Total Users</h3>
-//               <p className="text-4xl font-bold text-gray-900">{totalUsers}</p>
-//             </div>
-//             <div className="bg-white p-6 rounded-lg shadow-lg">
-//               <h3 className="text-xl font-semibold text-blue-700">Active Doctors</h3>
-//               <p className="text-4xl font-bold text-gray-900">{activeDoctors}</p>
-//             </div>
-//             <div className="bg-white p-6 rounded-lg shadow-lg">
-//               <h3 className="text-xl font-semibold text-blue-700">Active Patients</h3>
-//               <p className="text-4xl font-bold text-gray-900">{activePatients}</p>
-//             </div>
-//           </div>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default AdminDashboard;
+export default ManageUsers;
