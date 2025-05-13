@@ -79,7 +79,7 @@ const Navbar = () => {
             {currentUser ? (
               <div className="flex items-center space-x-4">
                 <div className="text-sm font-medium text-gray-700">
-                  {currentUser.name || currentUser.email}
+                  {currentUser.fullName || currentUser.email}
                   <span className="ml-2 px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
                     {currentUser.role}
                   </span>
@@ -149,7 +149,7 @@ const Navbar = () => {
                     <User className="h-10 w-10 rounded-full bg-gray-100 p-2" />
                   </div>
                   <div className="ml-3">
-                    <div className="text-base font-medium text-gray-800">{currentUser.name || currentUser.email}</div>
+                    <div className="text-base font-medium text-gray-800">{currentUser.fullName || currentUser.email}</div>
                     <div className="text-sm font-medium text-gray-500">{currentUser.role}</div>
                   </div>
                 </div>

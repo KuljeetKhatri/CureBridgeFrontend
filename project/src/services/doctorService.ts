@@ -36,7 +36,7 @@ import { User } from "../interface/User";
 export const doctorService = {
   fetchUsers: async (): Promise<User[]> => {
     try {
-      const response = await fetch("http://localhost:8089/getallusers");
+      const response = await fetch("http://localhost:8089/api/getallusers");
       if (!response.ok) {
         throw new Error("Failed to fetch users");
       }
@@ -63,7 +63,7 @@ export const doctorService = {
 
   fetchActiveUsersByRole: async (role: string): Promise<User[]> => {
     try {
-      const response = await fetch(`http://localhost:8089/getactiveusers?role=${role}`);
+      const response = await fetch(`http://localhost:8089/api/getactiveusers?role=${role}`);
       if (!response.ok) {
         throw new Error(`Failed to fetch active ${role}s`);
       }
@@ -90,7 +90,7 @@ export const doctorService = {
 
   fetchPendingDoctors: async (): Promise<any[]> => {
     try {
-      const response = await fetch("http://localhost:8089/getpendingdoctors");
+      const response = await fetch("http://localhost:8089/api/getpendingdoctors");
       if (!response.ok) {
         throw new Error("Failed to fetch pending doctors");
       }
@@ -117,7 +117,7 @@ export const doctorService = {
 
   updateDoctorStatus: async (doctorId: string, action: "approve" | "reject", adminId: string): Promise<void> => {
     try {
-      const response = await fetch(`http://localhost:8089/updatedoctorstatus/${doctorId}?adminId=${adminId}`, {
+      const response = await fetch(`http://localhost:8089/api/updatedoctorstatus/${doctorId}?adminId=${adminId}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

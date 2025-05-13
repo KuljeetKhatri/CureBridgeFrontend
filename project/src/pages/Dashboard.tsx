@@ -165,7 +165,7 @@ const Dashboard: React.FC = () => {
           </div>
         ) : (
           <div className="space-y-4">
-            <p className="text-gray-600">You are logged in as {currentUser.name || currentUser.email}.</p>
+            <p className="text-gray-600">You are logged in as {currentUser.fullName || currentUser.email}.</p>
             <p className="text-gray-600">Redirecting to your dashboard...</p>
           </div>
         )}

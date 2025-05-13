@@ -64,7 +64,7 @@ const AdminDashboard: React.FC = () => {
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-          <div className="text-lg text-gray-700">Welcome, {currentUser?.name || currentUser?.email}</div>
+          <div className="text-lg text-gray-700">Welcome, {currentUser?.fullName || currentUser?.email}</div>
         </div>
 
         <div className="mb-8">
