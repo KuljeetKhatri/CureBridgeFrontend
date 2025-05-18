@@ -220,7 +220,7 @@ const Login: React.FC = () => {
             </button>
           </div>
 
-          <div className="text-center text-sm text-gray-600">
+          {/* <div className="text-center text-sm text-gray-600">
             <p>Demo accounts:</p>
             <div className="mt-2 grid grid-cols-1 gap-2">
               <button
@@ -254,7 +254,7 @@ const Login: React.FC = () => {
                 Patient: patient@example.com / password
               </button>
             </div>
-          </div>
+          </div> */}
         </form>
       </div>
     </div>

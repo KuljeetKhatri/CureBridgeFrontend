@@ -51,7 +51,7 @@ export const doctorService = {
         name: user.fullName,
         email: user.email,
         role: user.role,
-        status: "Active", // Default status since it's not provided in user response
+        status: user.status, // Default status since it's not provided in user response
       }));
 
       return formattedUsers;
@@ -138,4 +138,13 @@ export const doctorService = {
       throw error;
     }
   },
+
+  updateStatus: async (userId: string, newStatus: string): Promise<void> => {
+    await fetch(`http://localhost:8089/api/updatestatus/${userId}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: newStatus }),
+    });
+  }
+  
 };

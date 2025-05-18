@@ -23,6 +23,25 @@ const VideoCallPage: React.FC = () => {
 
   const fullTranscript = `${myTranscript} ${mergedTranscript}`.replace(/\s+/g, " ").trim();
 
+  const saveTranscriptToBackend = async () => {
+    if (!appointmentId || !userType || !fullTranscript) return;
+    try {
+      const response = await fetch("http://localhost:8089/api/save-transcript", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          appointmentId,
+          userType,
+          transcript: fullTranscript,
+        }),
+      });
+      const result = await response.text();
+      console.log("Transcript saved:", result);
+    } catch (err) {
+      console.error("Failed to save transcript:", err);
+    }
+  };
+
   useEffect(() => {
     const queryParams = new URLSearchParams(window.location.search);
     setAppointmentId(queryParams.get("appointmentId"));
@@ -48,6 +67,7 @@ const VideoCallPage: React.FC = () => {
     frame.join({ url: "https://curebridge.daily.co/consultation123" });
 
     frame.on("left-meeting", () => {
+      saveTranscriptToBackend(); // ✅ Save on leave
       window.location.href = "/";
     });
 
@@ -62,13 +82,15 @@ const VideoCallPage: React.FC = () => {
     return () => {
       frame.leave().catch(console.error);
       frame.destroy();
+      saveTranscriptToBackend(); // ✅ Also save on unmount
     };
   }, [userType]);
 
   useEffect(() => {
     const startTranscription = async () => {
       try {
-        const socket = new WebSocket("ws://192.168.100.8:5001");
+        // const socket = new WebSocket("ws://192.168.100.8:5001");
+        const socket = new WebSocket("ws://172.20.10.2:5001");
         wsRef.current = socket;
 
         socket.onopen = async () => {
@@ -127,7 +149,7 @@ const VideoCallPage: React.FC = () => {
     if (!fullTranscript || userType !== "doctor") return;
     const timeout = setTimeout(() => {
       extractSymptoms(fullTranscript);
-    }, 3000);
+    }, 30000);
     return () => clearTimeout(timeout);
   }, [fullTranscript]);
 
@@ -172,12 +194,16 @@ const VideoCallPage: React.FC = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
+        
       });
       const result = await response.json();
       if (result?.disease) setPredictedDisease(result.disease);
       else if (result?.common_symptoms || result?.new_symptoms) {
         setSessionSymptoms(result.common_symptoms || result.new_symptoms);
         setSelectedIndices([]);
+      }
+      if(action === 'no'){
+        saveTranscriptToBackend(); 
       }
     } catch (err) {
       console.error("DP error", err);

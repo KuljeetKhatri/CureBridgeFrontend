@@ -33,18 +33,18 @@ const Navbar = () => {
           { name: "Admin Dashboard", path: "/admin", icon: <Settings className="w-5 h-5" /> },
           { name: "Manage Users", path: "/admin/users", icon: <Users className="w-5 h-5" /> },
         ]
-      case UserRole.DOCTOR:
-        return [
-          ...commonLinks,
-          { name: "Doctor Dashboard", path: "/doctor", icon: <Activity className="w-5 h-5" /> },
-          { name: "Patients", path: "/doctor/patients", icon: <Users className="w-5 h-5" /> },
-        ]
-      case UserRole.PATIENT:
-        return [
-          ...commonLinks,
-          { name: "Patient Dashboard", path: "/patient", icon: <User className="w-5 h-5" /> },
-          { name: "Appointments", path: "/patient/appointments", icon: <Activity className="w-5 h-5" /> },
-        ]
+      // case UserRole.DOCTOR:
+      //   return [
+      //     ...commonLinks,
+      //     { name: "Doctor Dashboard", path: "/doctor", icon: <Activity className="w-5 h-5" /> },
+      //     { name: "Patients", path: "/doctor/patients", icon: <Users className="w-5 h-5" /> },
+      //   ]
+      // case UserRole.PATIENT:
+      //   return [
+      //     ...commonLinks,
+      //     { name: "Patient Dashboard", path: "/patient", icon: <User className="w-5 h-5" /> },
+      //     { name: "Appointments", path: "/patient/appointments", icon: <Activity className="w-5 h-5" /> },
+      //   ]
       default:
         return commonLinks
     }
@@ -59,7 +59,7 @@ const Navbar = () => {
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
               <Link to="/" className="text-xl font-bold text-blue-600">
-                HealthCare Portal
+                CureBridge Portal
               </Link>
             </div>
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">

@@ -73,29 +73,7 @@ export const appointmentService = {
       }
     },
   
-    // Update an appointment status (e.g., mark as completed)
-    updateAppointmentStatus: async (appointmentId: string, status: string): Promise<void> => {
-      try {
-        const response = await fetch(`http://localhost:8089/api/updateappointmentstatus?id=${appointmentId}&status=${status}`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
   
-        if (!response.ok) {
-          throw new Error(`Failed to update appointment status to ${status}`);
-        }
-  
-        const data = await response.json();
-        if (data.responseCode !== "00") {
-          throw new Error(data.responseMessage || "Failed to update appointment status");
-        }
-      } catch (error) {
-        console.error("Error updating appointment status:", error);
-        throw error;
-      }
-    },
   
     // Create a new appointment
     createAppointment: async (appointment: {
@@ -188,6 +166,8 @@ export const appointmentService = {
     
             return {
               id: appointment.id?.toString() || "",
+              doctorId: appointment.doctor.id,
+              patientId:appointment.patient.id,
               patientName: appointment.patient?.user?.fullName || "Unknown",
               date: dateObj.toLocaleDateString('en-US', {
                 year: 'numeric',
@@ -209,5 +189,20 @@ export const appointmentService = {
           console.error("Error fetching doctor appointments:", error);
           return [];
         }
+      },
+      updateAppointmentStatus: async (appointmentId: string, newStatus: string) => {
+        const response = await fetch(`http://localhost:8089/api/appointment/${appointmentId}/status`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ status: newStatus }),
+        });
+    
+        if (!response.ok) {
+          throw new Error("Failed to update appointment status");
+        }
+    
+        return response.text(); // or response.json() if your backend returns JSON
       },
   };

@@ -2,6 +2,8 @@ import type React from "react";
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { doctorService } from "../services/doctorService";
+import { useNavigate } from "react-router-dom";
+
 
 const ManageUsers: React.FC = () => {
   const { currentUser } = useAuth();
@@ -11,6 +13,7 @@ const ManageUsers: React.FC = () => {
   const [filter, setFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const usersPerPage = 5;
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -43,11 +46,32 @@ const ManageUsers: React.FC = () => {
   const indexOfFirstUser = indexOfLastUser - usersPerPage;
   const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
   const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
+  const handleView = (userId: string) => navigate(`/view-user/${userId}`);
 
-  const handleStatusChange = (userId: string, newStatus: string) => {
-    setUsers((prevUsers) =>
-      prevUsers.map((user) => (user.id === userId ? { ...user, status: newStatus } : user))
-    );
+  const handleStatusChange = async (userId: string, newStatus: string) => {
+    try {
+      const response = await fetch(`http://localhost:8089/api/user/${userId}/status`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+  
+      const result = await response.json();
+  
+      if (result.responseCode === "00") {
+        setUsers((prevUsers) =>
+          prevUsers.map((user) =>
+            user.id === userId ? { ...user, status: newStatus } : user
+          )
+        );
+      } else {
+        console.error("Update failed:", result.responseMessage);
+      }
+    } catch (error) {
+      console.error("Failed to update status:", error);
+    }
   };
 
   const handleDoctorApproval = async (doctorId: string, action: "approve" | "reject") => {
@@ -173,18 +197,31 @@ const ManageUsers: React.FC = () => {
                         {user.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm">
+                    <tr key={user.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 text-sm space-x-2">
                       <select
                         value={user.status}
                         onChange={(e) => handleStatusChange(user.id, e.target.value)}
-                        className="text-sm border rounded p-1 mr-2"
+                        className="text-sm border rounded p-1"
                       >
-                        <option value="Active">Active</option>
-                        <option value="Inactive">Inactive</option>
-                        <option value="Pending">Pending</option>
+                        <option value="ACTIVE">Active</option>
+                        <option value="INACTIVE">Inactive</option>
+                        <option value="PENDING">Pending</option>
                       </select>
-                      <button className="text-blue-600 hover:text-blue-800">Edit</button>
+                      {/* <button
+                        onClick={() => handleEdit(user.id)}
+                        className="text-blue-600 hover:text-blue-800"
+                      >
+                        Edit
+                      </button> */}
+                      <button
+                        onClick={() => handleView(user.id)}
+                        className="text-indigo-600 hover:text-indigo-800"
+                      >
+                        View
+                      </button>
                     </td>
+                  </tr>
                   </tr>
                 ))}
               </tbody>

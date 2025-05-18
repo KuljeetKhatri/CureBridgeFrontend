@@ -728,9 +728,16 @@ const PatientDashboard: React.FC = () => {
                             Call
                           </button>
                         )}
-                        {appointment.status === "Completed" && (
-                          <button className="text-blue-600 hover:text-blue-800">View Summary</button>
-                        )}
+                       {appointment.status === "COMPLETED" && (
+                        <button
+                        className="inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-white hover:bg-blue-600 border border-blue-600 px-4 py-2 rounded-full transition duration-200 ease-in-out"
+
+                          onClick={() => navigate(`/prescription/view?appointmentId=${appointment.id}`)}
+                        >
+                          Prescription
+                        </button>
+                      )}
+
                       </td>
                     </tr>
                   ))}

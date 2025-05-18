@@ -149,11 +149,14 @@ import PatientDashboard from "./pages/PatientDashboard";
 import VideoCallPage from "./pages/VideoCallPage"; // Add VideoCallPage import
 import ManageUsers from "./pages/ManageUsers";
 import Unauthorized from "./pages/Unauthorized";
+import ViewUserPage from "./pages/ViewUserPage";
 
 // Components
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ScheduleAppointment from "./pages/ScheduleAppointment";
+import AddPrescriptionPage from "./pages/AddPrescriptionPage";
+import ViewPrescriptionPage from "./pages/ViewPrescriptionPage";
 
 // Protected route wrapper with role check
 const RoleProtectedRoute: React.FC<{
@@ -270,6 +273,9 @@ const AppRoutes = () => {
                 </RoleProtectedRoute>
               }
             />
+            <Route path="/view-user/:userId" element={<ViewUserPage />} />
+            <Route path="/prescription/add" element={<AddPrescriptionPage />} />
+            <Route path="/prescription/view" element={<ViewPrescriptionPage />} />
 
             {/* Catch all route */}
             <Route path="*" element={<Navigate to="/" />} />
